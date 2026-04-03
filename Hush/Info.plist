@@ -16,7 +16,5 @@
     <true/>
     <key>NSAccessibilityUsageDescription</key>
     <string>Hush needs Accessibility access to detect open app windows.</string>
-    <key>NSUserNotificationsUsageDescription</key>
-    <string>Hush notifies you when it quietly quits an app.</string>
 </dict>
 </plist>

@@ -26,7 +26,7 @@ struct LaunchAtLoginToggle: View {
                 try SMAppService.mainApp.unregister()
             }
         } catch {
-            // Silently fail — user can retry
+            isEnabled = currentStatus()
         }
     }
 }

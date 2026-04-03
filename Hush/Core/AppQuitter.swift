@@ -9,7 +9,7 @@ class AppQuitter {
         print("[Hush] ✂ Quitting \"\(name)\" (\(bundleID), pid \(app.processIdentifier))")
         app.terminate()
 
-        let record = QuitRecord(appName: name, bundleIdentifier: bundleID)
+        let record = QuitRecord(appName: name, bundleIdentifier: bundleID, bundleURL: app.bundleURL)
         onQuit(record)
 
         sendNotification(appName: name)

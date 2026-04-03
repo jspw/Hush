@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F015 /* Assets.xcassets */; };
 		B001 /* HushApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001 /* HushApp.swift */; };
 		B002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002 /* AppDelegate.swift */; };
 		B003 /* QuitRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F003 /* QuitRecord.swift */; };
@@ -24,7 +25,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		35EA5EA92F6B715200BD2FAC /* icon_1024.png.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_1024.png.png; sourceTree = "<group>"; };
+		F015 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F001 /* HushApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushApp.swift; sourceTree = "<group>"; };
 		F002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F003 /* QuitRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuitRecord.swift; sourceTree = "<group>"; };
@@ -52,10 +53,10 @@
 				F002 /* AppDelegate.swift */,
 				FPLIST /* Info.plist */,
 				FENT /* Hush.entitlements */,
+				F015 /* Assets.xcassets */,
 				GMODELS /* Models */,
 				GCORE /* Core */,
 				GUI /* UI */,
-				35EA5EA92F6B715200BD2FAC /* icon_1024.png.png */,
 			);
 			path = Hush;
 			sourceTree = "<group>";
@@ -116,6 +117,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BCLLIST /* Build configuration list for PBXNativeTarget "Hush" */;
 			buildPhases = (
+				BPRESOURCES /* Resources */,
 				BPSOURCES /* Sources */,
 			);
 			buildRules = (
@@ -159,6 +161,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BPRESOURCES /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B015 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BPSOURCES /* Sources */ = {
@@ -255,7 +268,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Hush/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

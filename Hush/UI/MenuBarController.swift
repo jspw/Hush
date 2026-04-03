@@ -22,7 +22,7 @@ class MenuBarController {
         statusItem = item
 
         let pop = NSPopover()
-        pop.contentSize = NSSize(width: 320, height: 420)
+        pop.contentSize = NSSize(width: 320, height: 460)
         pop.behavior = .transient
         pop.contentViewController = NSHostingController(
             rootView: PopoverView(monitor: monitor, whitelistManager: whitelistManager)
@@ -41,6 +41,7 @@ class MenuBarController {
                 rootView: PopoverView(monitor: monitor, whitelistManager: whitelistManager)
             )
             pop.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            pop.contentViewController?.view.window?.makeKey()
             addEventMonitor()
         }
     }

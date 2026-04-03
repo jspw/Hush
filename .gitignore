@@ -1,5 +1,6 @@
 # Xcode
 DerivedData/
+.derived-data/
 *.xcuserstate
 xcuserdata/
 *.xccheckout
@@ -32,4 +33,4 @@ build/
 
 # Packages
 .swiftpm/
-.claude
+.claude/

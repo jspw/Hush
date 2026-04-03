@@ -198,4 +198,11 @@ class AppMonitor: ObservableObject {
         whitelistManager.add(bundleID: record.bundleIdentifier)
         recentlyQuit.removeAll { $0.id == record.id }
     }
+
+    deinit {
+        let nc = NSWorkspace.shared.notificationCenter
+        observers.forEach { nc.removeObserver($0) }
+        pollTimer?.invalidate()
+        pendingChecks.values.forEach { $0.cancel() }
+    }
 }
