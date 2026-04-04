@@ -4,17 +4,20 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECT_PATH="${PROJECT_PATH:-$PROJECT_DIR/Hush.xcodeproj}"
 PROJECT_FILE="$PROJECT_PATH/project.pbxproj"
-BUILD_SCRIPT="${BUILD_SCRIPT:-$PROJECT_DIR/scripts/build-dmg.sh}"
 APP_NAME="${APP_NAME:-Hush}"
 APP_BASENAME="${APP_NAME%.app}"
 DRAFT_RELEASE="${DRAFT_RELEASE:-0}"
+DMG_PATH_OVERRIDE="${DMG_PATH:-}"
 
 usage() {
   cat <<EOF
 Usage: $0 [--draft]
 
-Builds a release from the current project version, commits the version bump,
-tags the release, pushes branch and tag, and creates a GitHub release.
+Publishes a release from the current project version/build, commits the
+pending version bump, tags the release, pushes branch and tag, and creates
+the GitHub release.
+
+This script does not build artifacts. Run scripts/build-dmg.sh first.
 
 Options:
   --draft   Create the GitHub release as a draft instead of publishing it.
@@ -35,9 +38,33 @@ project_setting_value() {
 }
 
 ensure_clean_worktree() {
-  if [ -n "$(git status --porcelain)" ]; then
-    echo "Error: git working tree is not clean."
-    echo "Commit or stash your current changes before running a release."
+  local status_lines
+  local path
+  local release_change_found=0
+
+  status_lines="$(git status --porcelain)"
+  if [ -z "$status_lines" ]; then
+    echo "Error: no pending release commit found."
+    echo "Update the project version/build first, then run this script."
+    exit 1
+  fi
+
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    path="${line:3}"
+    if [ "$path" = "Hush.xcodeproj/project.pbxproj" ]; then
+      release_change_found=1
+      continue
+    fi
+
+    echo "Error: found unrelated working tree change: $path"
+    echo "Release publishing expects only Hush.xcodeproj/project.pbxproj to be pending."
+    exit 1
+  done <<< "$status_lines"
+
+  if [ "$release_change_found" != "1" ]; then
+    echo "Error: Hush.xcodeproj/project.pbxproj is not modified."
+    echo "Bump the release version/build first, then run this script."
     exit 1
   fi
 }
@@ -73,7 +100,6 @@ fi
 
 require_command git
 require_command gh
-require_command "$BUILD_SCRIPT"
 
 if [ ! -d "$PROJECT_PATH" ]; then
   echo "Error: project not found at $PROJECT_PATH"
@@ -116,22 +142,19 @@ echo "Branch: $CURRENT_BRANCH"
 echo "Project version: $MARKETING_VERSION"
 echo "Current build: $CURRENT_PROJECT_VERSION"
 echo ""
-echo "Building release..."
-"$BUILD_SCRIPT" "$MARKETING_VERSION"
-
-UPDATED_PROJECT_VERSION="$(project_setting_value CURRENT_PROJECT_VERSION)"
-if [ -z "$UPDATED_PROJECT_VERSION" ]; then
-  echo "Error: could not read updated CURRENT_PROJECT_VERSION after build."
-  exit 1
+if [ -n "$DMG_PATH_OVERRIDE" ]; then
+  DMG_PATH="$DMG_PATH_OVERRIDE"
+else
+  DMG_PATH="$PROJECT_DIR/$APP_BASENAME-$MARKETING_VERSION-$CURRENT_PROJECT_VERSION.dmg"
 fi
 
-DMG_PATH="$PROJECT_DIR/$APP_BASENAME-$MARKETING_VERSION-$UPDATED_PROJECT_VERSION.dmg"
 if [ ! -f "$DMG_PATH" ]; then
   echo "Error: expected DMG not found at $DMG_PATH"
+  echo "Run scripts/build-dmg.sh first, or set DMG_PATH to an existing artifact."
   exit 1
 fi
 
-COMMIT_MESSAGE="Release $RELEASE_TAG (build $UPDATED_PROJECT_VERSION)"
+COMMIT_MESSAGE="Release $RELEASE_TAG (build $CURRENT_PROJECT_VERSION)"
 RELEASE_TITLE="$APP_BASENAME $RELEASE_TAG"
 
 echo ""
