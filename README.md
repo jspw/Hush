@@ -2,20 +2,27 @@
 
 > Silently quits macOS apps when their last window is closed.
 
-macOS keeps apps running after you close their last window — they linger in Cmd+Tab, waste memory, and do nothing. Hush fixes this quietly.
+On macOS, closing the last window often does not actually close the app. It keeps hanging around in `Cmd+Tab`, steals a slot in your app switcher, and gets in the way when you are flying across apps with keyboard shortcuts.
 
-## How it works
+Hush removes that friction. When an app is effectively done, Hush quietly quits it so your app switcher stays clean and your focus stays on the app you actually meant to jump to.
 
-Hush lives in your menu bar. When you close an app's last window, Hush detects it within ~1 second and calls `terminate()` on it automatically. Apps that are intentionally backgrounded (Docker, Dropbox — anything with an `.accessory` activation policy) are never touched.
+<p align="center">
+  <img src="assets/hush-menu-bar.png" alt="Hush popover and menu bar" width="460">
+</p>
 
 ## Features
 
 - Auto-quits windowless apps within ~1 second
+- Keeps `Cmd+Tab` focused on apps you are actually using
 - Never quits background-only apps (Docker, Dropbox, etc.)
 - Whitelist — protect apps you want to keep running
 - Recently Quit list with "Keep" button to undo
 - Launch at Login
 - 0% CPU, ~130MB RAM at idle
+
+<p align="center">
+  <img src="assets/hush-full.png" alt="Hush running in the menu bar" width="960">
+</p>
 
 ## Requirements
 
@@ -28,24 +35,68 @@ Hush lives in your menu bar. When you close an app's last window, Hush detects i
 
 Grab the latest `.dmg` from [Releases](https://github.com/jspw/Hush/releases).
 
-### Build from source
+1. Open the downloaded DMG.
+2. Move `Hush.app` into `/Applications`.
+3. Open `Hush.app`.
+4. If macOS blocks it, open:
 
-```bash
-git clone https://github.com/jspw/Hush.git
-cd Hush
-xcodebuild -project Hush.xcodeproj -scheme Hush -destination 'platform=macOS' build
-```
+`System Settings -> Privacy & Security`
 
-Or open `Hush.xcodeproj` in Xcode and hit Cmd+R.
+Then scroll to the **Security** section and click **Open Anyway** for `Hush.app`.
+
+<p align="center">
+  <img src="assets/security-alerts-while-installation.png" alt="macOS security alerts while installing Hush" width="860">
+</p>
+
+### Why macOS says Hush can't be verified
+
+Hush is currently distributed without Apple notarization, so macOS may warn that it "can't verify" the app the first time you open it.
+
+Notarizing a macOS app for public distribution requires enrollment in the [Apple Developer Program](https://developer.apple.com/programs/), which Apple currently lists at **99 USD per membership year** in the U.S. Pricing can vary by region. For a free open-source utility, that recurring cost does not make much sense right now.
+
+If you are cautious about running an unsigned app, that is completely reasonable. Hush is open source, so you can inspect the code yourself, build it from source, and decide whether you trust it before running it.
 
 ### First launch
 
-Grant **Accessibility** permission when prompted, or go to:
-**System Settings → Privacy & Security → Accessibility → add Hush**
+Hush needs **Accessibility** permission to work.
+
+That permission is required because Hush monitors whether apps still have open windows. Without Accessibility access, macOS will not let Hush inspect window state, so it cannot safely decide when an app should be quit.
+
+1. When macOS prompts you, allow the app to open Accessibility settings.
+
+<p align="center">
+  <img src="assets/accessibility-permission-modal.png" alt="Accessibility permission prompt" width="520">
+</p>
+
+2. Open **System Settings → Privacy & Security → Accessibility**, then enable Hush.
+
+<p align="center">
+  <img src="assets/accessbility-permission-allow.png" alt="Enable Hush in Accessibility settings" width="420">
+</p>
+
+Once permission is granted, Hush sits quietly in the menu bar and starts watching for regular apps with zero open windows.
+
+## How it works
+
+Hush lives in your menu bar and watches for regular apps that no longer have any open windows. When you close the last window and move on, Hush detects that state within about a second and calls `terminate()` automatically. Apps that are intentionally backgrounded, like Docker or Dropbox, are left alone.
 
 ## Why not App Store?
 
 The App Store requires sandboxing, which blocks the Accessibility API Hush depends on to count windows. Direct download only.
+
+## Releasing
+
+Build the release artifact:
+
+```bash
+./scripts/build-dmg.sh 1.0.0
+```
+
+Publish the GitHub release after the DMG already exists:
+
+```bash
+./scripts/release.sh
+```
 
 ## Contributing
 

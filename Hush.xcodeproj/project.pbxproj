@@ -11,7 +11,6 @@
 		B001 /* HushApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001 /* HushApp.swift */; };
 		B002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002 /* AppDelegate.swift */; };
 		B003 /* QuitRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F003 /* QuitRecord.swift */; };
-		B004 /* AppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F004 /* AppEntry.swift */; };
 		B005 /* WhitelistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F005 /* WhitelistManager.swift */; };
 		B006 /* WindowChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F006 /* WindowChecker.swift */; };
 		B007 /* AppQuitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F007 /* AppQuitter.swift */; };
@@ -29,7 +28,6 @@
 		F001 /* HushApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushApp.swift; sourceTree = "<group>"; };
 		F002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F003 /* QuitRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuitRecord.swift; sourceTree = "<group>"; };
-		F004 /* AppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEntry.swift; sourceTree = "<group>"; };
 		F005 /* WhitelistManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhitelistManager.swift; sourceTree = "<group>"; };
 		F006 /* WindowChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowChecker.swift; sourceTree = "<group>"; };
 		F007 /* AppQuitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppQuitter.swift; sourceTree = "<group>"; };
@@ -76,7 +74,6 @@
 			isa = PBXGroup;
 			children = (
 				F003 /* QuitRecord.swift */,
-				F004 /* AppEntry.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -181,7 +178,6 @@
 				B001 /* HushApp.swift in Sources */,
 				B002 /* AppDelegate.swift in Sources */,
 				B003 /* QuitRecord.swift in Sources */,
-				B004 /* AppEntry.swift in Sources */,
 				B005 /* WhitelistManager.swift in Sources */,
 				B006 /* WindowChecker.swift in Sources */,
 				B007 /* AppQuitter.swift in Sources */,

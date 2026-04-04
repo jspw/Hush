@@ -20,8 +20,11 @@ build/
 *.d
 *.hmap
 *.ipa
+*.xcarchive
+*.xcresult
 *.dSYM.zip
 *.dSYM
+*.log
 
 # macOS
 .DS_Store
