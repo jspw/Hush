@@ -34,3 +34,5 @@ build/
 # Packages
 .swiftpm/
 .claude/
+archived/
+*.dmg

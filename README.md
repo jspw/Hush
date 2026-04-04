@@ -26,13 +26,13 @@ Hush lives in your menu bar. When you close an app's last window, Hush detects i
 
 ### Download
 
-Grab the latest `.dmg` from [Releases](../../releases).
+Grab the latest `.dmg` from [Releases](https://github.com/jspw/Hush/releases).
 
 ### Build from source
 
 ```bash
-git clone https://github.com/YOUR_USER/hush.git
-cd hush
+git clone https://github.com/jspw/Hush.git
+cd Hush
 xcodebuild -project Hush.xcodeproj -scheme Hush -destination 'platform=macOS' build
 ```
 
