@@ -2,8 +2,8 @@
   "images" : [
     {
       "filename" : "icon_1024.png",
-      "idiom" : "mac",
-      "scale" : "1x",
+      "idiom" : "universal",
+      "platform" : "macos",
       "size" : "1024x1024"
     }
   ],
