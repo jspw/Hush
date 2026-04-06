@@ -16,7 +16,7 @@ class MenuBarController {
 
     func setup() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.image = NSImage(systemSymbolName: "moon.zzz.fill", accessibilityDescription: "Hush")
+        item.button?.image = NSImage(named: "MenuBarIcon") ?? NSImage(systemSymbolName: "moon.zzz.fill", accessibilityDescription: "Hush")
         item.button?.action = #selector(togglePopover)
         item.button?.target = self
         statusItem = item

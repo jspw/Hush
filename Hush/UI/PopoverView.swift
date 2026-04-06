@@ -46,6 +46,7 @@ struct PopoverView: View {
             Toggle("", isOn: $monitor.isEnabled)
                 .toggleStyle(.switch)
                 .controlSize(.mini)
+                .scaleEffect(0.8)
                 .tint(.indigo)
                 .labelsHidden()
         }
@@ -53,20 +54,12 @@ struct PopoverView: View {
         .padding(.vertical, 12)
     }
 
-    @ViewBuilder
     private var headerIcon: some View {
-        if let appIcon = NSApp.applicationIconImage.copy() as? NSImage {
-            Image(nsImage: appIcon)
-                .resizable()
-                .interpolation(.high)
-                .frame(width: 18, height: 18)
-                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-        } else {
-            Image(systemName: "moon.zzz.fill")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.indigo)
-                .symbolRenderingMode(.hierarchical)
-        }
+        Image("HushIcon")
+            .resizable()
+            .interpolation(.high)
+            .frame(width: 18, height: 18)
+            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
     }
 
     private var accessibilityBanner: some View {
@@ -98,31 +91,33 @@ struct PopoverView: View {
     private var footerSection: some View {
         VStack(spacing: 0) {
             Divider()
-            HStack {
-                Label {
-                    Text("Launch at Login")
-                        .font(.subheadline)
-                } icon: {
-                    Image(systemName: "arrow.up.circle")
-                        .foregroundStyle(.secondary)
-                }
+            HStack(spacing: 5) {
+                Image(systemName: "arrow.up.circle")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                Text("Launch at Login")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
                 Spacer()
                 LaunchAtLoginToggle()
+                    .controlSize(.mini)
+                    .scaleEffect(0.8)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 6)
+            Divider()
             Button {
                 NSApp.terminate(nil)
             } label: {
                 Text("Quit Hush")
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
             .onHover { hovering in
                 if hovering { NSCursor.pointingHand.push() } else { NSCursor.pop() }
             }
-            .padding(.bottom, 10)
+            .padding(.vertical, 6)
         }
     }
 
