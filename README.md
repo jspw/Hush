@@ -35,18 +35,18 @@ Hush removes that friction. When an app is effectively done, Hush quietly quits 
 
 Grab the latest `.dmg` from [Releases](https://github.com/jspw/Hush/releases).
 
-1. Open the downloaded DMG.
-2. Move `Hush.app` into `/Applications`.
-3. Open `Hush.app`.
-4. If macOS blocks it, open:
+1. Double-click the downloaded DMG — a window opens showing `Hush.app`.
+2. Drag `Hush.app` into `/Applications` (use the Applications shortcut in the DMG window).
+3. Open **Terminal** and run:
 
-`System Settings -> Privacy & Security`
+```bash
+xattr -dr com.apple.quarantine /Applications/Hush.app
+```
 
-Then scroll to the **Security** section and click **Open Anyway** for `Hush.app`.
+4. Go to `/Applications` in Finder, right-click `Hush.app`, and choose **Open**.
+5. If macOS still shows a warning dialog, click **Open** to confirm.
 
-<p align="center">
-  <img src="assets/security-alerts-while-installation.png" alt="macOS security alerts while installing Hush" width="860">
-</p>
+> **Why the Terminal step?** macOS quarantines apps downloaded from the internet and may silently delete unnotarized apps copied to `/Applications`. The `xattr` command strips that quarantine flag so macOS leaves the app in place. Once removed, Hush will also appear in your app drawer's Applications section and **Launch at Login** will work correctly across restarts.
 
 ### Why macOS says Hush can't be verified
 
