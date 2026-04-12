@@ -76,6 +76,25 @@ That permission is required because Hush monitors whether apps still have open w
 
 Once permission is granted, Hush sits quietly in the menu bar and starts watching for regular apps with zero open windows.
 
+### Updating to a new version
+
+Hush does not auto-update — new versions are installed manually by replacing the app in `/Applications`.
+
+Each release is a fresh build with a new code signature, and macOS treats it as a different app for Accessibility purposes. That means after replacing the app, the old Accessibility entry stops working and Hush will silently stop quitting windowless apps until you re-grant it.
+
+To update cleanly:
+
+1. Quit Hush from the menu bar (click the icon → **Quit Hush**).
+2. Open **System Settings → Privacy & Security → Accessibility** and remove the existing Hush entry (select it, then click the `–` button).
+3. Drag the new `Hush.app` into `/Applications`, replacing the old one.
+4. Run the quarantine command again:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Hush.app
+```
+
+5. Launch Hush and re-enable it in **Accessibility** when prompted.
+
 ## How it works
 
 Hush lives in your menu bar and watches for regular apps that no longer have any open windows. When you close the last window and move on, Hush detects that state within about a second and calls `terminate()` automatically. Apps that are intentionally backgrounded, like Docker or Dropbox, are left alone.
