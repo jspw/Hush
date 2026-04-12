@@ -17,6 +17,12 @@ class AppMonitor: ObservableObject {
     private var lastFrontmostPID: pid_t = -1
     private var lastFrontmostWindowCount: Int = -1
 
+    // Tracks apps known to have fullscreen windows. Populated when apps are
+    // frontmost (via the poll timer) and checked on deactivation. Fixes GitHub #1:
+    // CMD+TAB from a fullscreen app causes AX to report 0 windows (because the
+    // window is on another Space), which would otherwise trigger a false quit.
+    private var fullscreenApps: Set<pid_t> = []
+
     init(windowChecker: WindowCheckerProtocol,
          whitelistManager: WhitelistManager,
          quitter: AppQuitter) {
@@ -58,6 +64,7 @@ class AppMonitor: ObservableObject {
             }
             self?.pendingChecks[app.processIdentifier]?.cancel()
             self?.pendingChecks.removeValue(forKey: app.processIdentifier)
+            self?.fullscreenApps.remove(app.processIdentifier)
         }
 
         observers = [deactivate, hide, terminate]
@@ -65,9 +72,18 @@ class AppMonitor: ObservableObject {
 
     private func handleAppEvent(_ note: Notification) {
         guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
+        let pid = app.processIdentifier
         let name = app.localizedName ?? "?"
         let event = note.name == NSWorkspace.didDeactivateApplicationNotification ? "deactivated" : "hidden"
-        print("[Hush] Event: \"\(name)\" \(event) (pid \(app.processIdentifier))")
+        print("[Hush] Event: \"\(name)\" \(event) (pid \(pid))")
+
+        // If the app is (or was) fullscreen, AX may report 0 windows once it
+        // moves to another Space. Don't schedule a check at all.
+        if fullscreenApps.contains(pid) || windowChecker.hasFullscreenWindow(for: pid) {
+            print("[Hush]   ✗ Skipped: \"\(name)\" has fullscreen window(s)")
+            return
+        }
+
         // Reset poll cache so the new frontmost app gets checked
         lastFrontmostPID = -1
         lastFrontmostWindowCount = -1
@@ -173,6 +189,15 @@ class AppMonitor: ObservableObject {
         guard bundleID != Bundle.main.bundleIdentifier else { return }
         guard !whitelistManager.isWhitelisted(bundleID: bundleID) else { return }
         if pendingChecks[pid] != nil { return }
+
+        // Cache fullscreen state while the app is frontmost (AX can see the
+        // windows on the current Space). This is checked later on deactivation
+        // in case the app moves to another Space.
+        if windowChecker.hasFullscreenWindow(for: pid) {
+            fullscreenApps.insert(pid)
+        } else {
+            fullscreenApps.remove(pid)
+        }
 
         let count = windowChecker.windowCount(for: pid)
         lastFrontmostPID = pid
