@@ -21,6 +21,7 @@
 		B012 /* WhitelistEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012 /* WhitelistEditorView.swift */; };
 		B013 /* ViewHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = F013 /* ViewHelpers.swift */; };
 		B014 /* LaunchAtLoginToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014 /* LaunchAtLoginToggle.swift */; };
+		B016 /* HushLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* HushLogger.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		F012 /* WhitelistEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhitelistEditorView.swift; sourceTree = "<group>"; };
 		F013 /* ViewHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHelpers.swift; sourceTree = "<group>"; };
 		F014 /* LaunchAtLoginToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginToggle.swift; sourceTree = "<group>"; };
+		F016 /* HushLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushLogger.swift; sourceTree = "<group>"; };
 		FAPP /* Hush.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hush.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FENT /* Hush.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Hush.entitlements; sourceTree = "<group>"; };
 		FPLIST /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -66,6 +68,7 @@
 				F006 /* WindowChecker.swift */,
 				F007 /* AppQuitter.swift */,
 				F008 /* AppMonitor.swift */,
+				F016 /* HushLogger.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -188,6 +191,7 @@
 				B012 /* WhitelistEditorView.swift in Sources */,
 				B013 /* ViewHelpers.swift in Sources */,
 				B014 /* LaunchAtLoginToggle.swift in Sources */,
+				B016 /* HushLogger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,7 +266,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -271,7 +275,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.4.0;
+				MARKETING_VERSION = 1.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hush.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -341,7 +345,7 @@
 				CODE_SIGN_ENTITLEMENTS = Hush/Hush.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -350,7 +354,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.4.0;
+				MARKETING_VERSION = 1.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hush.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
