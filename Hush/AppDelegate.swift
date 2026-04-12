@@ -6,18 +6,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var appMonitor: AppMonitor?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        print("[Hush] App launched")
+        HushLogger.start()
+        hushLog("App launched")
         NSApp.setActivationPolicy(.accessory)
 
         // Prompt for Accessibility if not granted (opens System Settings automatically)
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
-        print("[Hush] Accessibility granted: \(trusted)")
+        hushLog("Accessibility granted: \(trusted)")
 
         let checker = WindowChecker()
 
         let whitelist = WhitelistManager()
-        print("[Hush] Whitelist: \(whitelist.whitelistedBundleIDs)")
+        hushLog("Whitelist: \(whitelist.whitelistedBundleIDs)")
 
         let quitter = AppQuitter()
         let monitor = AppMonitor(windowChecker: checker, whitelistManager: whitelist, quitter: quitter)
@@ -25,14 +26,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menuBarController = MenuBarController(monitor: monitor, whitelistManager: whitelist)
         menuBarController?.setup()
-        print("[Hush] Menu bar set up")
+        hushLog("Menu bar set up")
 
         requestNotificationPermission()
     }
 
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
-            print("[Hush] Notification permission granted: \(granted), error: \(error?.localizedDescription ?? "none")")
+            hushLog("Notification permission granted: \(granted), error: \(error?.localizedDescription ?? "none")")
         }
     }
 }

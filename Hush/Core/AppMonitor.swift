@@ -58,9 +58,9 @@ class AppMonitor: ObservableObject {
             guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
             let name = app.localizedName ?? "?"
             if self?.pendingChecks[app.processIdentifier] != nil {
-                print("[Hush] Event: \"\(name)\" terminated — cancelling pending check")
+                hushLog("Event: \"\(name)\" terminated — cancelling pending check")
             } else {
-                print("[Hush] Event: \"\(name)\" terminated")
+                hushLog("Event: \"\(name)\" terminated")
             }
             self?.pendingChecks[app.processIdentifier]?.cancel()
             self?.pendingChecks.removeValue(forKey: app.processIdentifier)
@@ -75,12 +75,12 @@ class AppMonitor: ObservableObject {
         let pid = app.processIdentifier
         let name = app.localizedName ?? "?"
         let event = note.name == NSWorkspace.didDeactivateApplicationNotification ? "deactivated" : "hidden"
-        print("[Hush] Event: \"\(name)\" \(event) (pid \(pid))")
+        hushLog("Event: \"\(name)\" \(event) (pid \(pid))")
 
         // If the app is (or was) fullscreen, AX may report 0 windows once it
         // moves to another Space. Don't schedule a check at all.
         if fullscreenApps.contains(pid) || windowChecker.hasFullscreenWindow(for: pid) {
-            print("[Hush]   ✗ Skipped: \"\(name)\" has fullscreen window(s)")
+            hushLog("  ✗ Skipped: \"\(name)\" has fullscreen window(s)")
             return
         }
 
@@ -94,7 +94,7 @@ class AppMonitor: ObservableObject {
         let pid = app.processIdentifier
         let name = app.localizedName ?? "?"
         if pendingChecks[pid] != nil {
-            print("[Hush] Cancelling previous pending check for \"\(name)\"")
+            hushLog("Cancelling previous pending check for \"\(name)\"")
         }
         pendingChecks[pid]?.cancel()
 
@@ -102,53 +102,53 @@ class AppMonitor: ObservableObject {
             self?.performCheck(app: app)
         }
         pendingChecks[pid] = work
-        print("[Hush] Scheduled check for \"\(name)\" in 0.8s")
+        hushLog("Scheduled check for \"\(name)\" in 0.8s")
         checkQueue.asyncAfter(deadline: .now() + 0.8, execute: work)
     }
 
     private func performCheck(app: NSRunningApplication) {
         let name = app.localizedName ?? "?"
         let bundleID = app.bundleIdentifier ?? "(none)"
-        print("[Hush] Checking \"\(name)\" (\(bundleID))...")
+        hushLog("Checking \"\(name)\" (\(bundleID))...")
 
         guard isEnabled else {
-            print("[Hush]   ✗ Skipped: Hush is disabled")
+            hushLog("  ✗ Skipped: Hush is disabled")
             return
         }
         guard !app.isTerminated else {
-            print("[Hush]   ✗ Skipped: already terminated")
+            hushLog("  ✗ Skipped: already terminated")
             return
         }
         guard app.activationPolicy == .regular else {
             let policy = app.activationPolicy == .accessory ? "accessory (background app)" : "prohibited"
-            print("[Hush]   ✗ Skipped: activation policy is .\(policy)")
+            hushLog("  ✗ Skipped: activation policy is .\(policy)")
             return
         }
         guard let bid = app.bundleIdentifier else {
-            print("[Hush]   ✗ Skipped: no bundle identifier")
+            hushLog("  ✗ Skipped: no bundle identifier")
             return
         }
         guard !whitelistManager.isWhitelisted(bundleID: bid) else {
-            print("[Hush]   ✗ Skipped: whitelisted")
+            hushLog("  ✗ Skipped: whitelisted")
             return
         }
         guard bid != Bundle.main.bundleIdentifier else {
-            print("[Hush]   ✗ Skipped: that's us (Hush)")
+            hushLog("  ✗ Skipped: that's us (Hush)")
             return
         }
 
         let count = windowChecker.windowCount(for: app.processIdentifier)
         guard count == 0 else {
-            print("[Hush]   ✗ Skipped: has \(count) window(s)")
+            hushLog("  ✗ Skipped: has \(count) window(s)")
             return
         }
 
-        print("[Hush]   ✓ All gates passed — quitting \"\(name)\"")
+        hushLog("  ✓ All gates passed — quitting \"\(name)\"")
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             guard !app.isTerminated else {
-                print("[Hush]   ✗ Skipped: terminated before we could quit")
+                hushLog("  ✗ Skipped: terminated before we could quit")
                 return
             }
             self.quitter.quit(app: app) { record in
@@ -205,7 +205,7 @@ class AppMonitor: ObservableObject {
 
         if count == 0 {
             let name = app.localizedName ?? "?"
-            print("[Hush] Poll: \"\(name)\" is frontmost with 0 windows — quitting")
+            hushLog("Poll: \"\(name)\" is frontmost with 0 windows — quitting")
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 guard !app.isTerminated else { return }

@@ -124,7 +124,7 @@ struct PopoverView: View {
     private func checkAccessibility() {
         let granted = AXIsProcessTrusted()
         if granted != accessibilityGranted {
-            print("[Hush] Accessibility permission changed: \(granted)")
+            hushLog("Accessibility permission changed: \(granted)")
         }
         accessibilityGranted = granted
     }

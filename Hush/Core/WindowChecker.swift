@@ -10,7 +10,7 @@ protocol WindowCheckerProtocol {
 class WindowChecker: WindowCheckerProtocol {
     func windowCount(for pid: pid_t) -> Int {
         guard isAccessibilityGranted() else {
-            print("[Hush] WindowChecker: Accessibility NOT granted, returning -1 (safe skip)")
+            hushLog("WindowChecker: Accessibility NOT granted, returning -1 (safe skip)")
             return -1
         }
 
@@ -25,10 +25,10 @@ class WindowChecker: WindowCheckerProtocol {
         case .noValue:
             count = 0
         default:
-            print("[Hush] WindowChecker: AX API error (\(result.rawValue)) for pid \(pid), returning -1 (safe skip)")
+            hushLog("WindowChecker: AX API error (\(result.rawValue)) for pid \(pid), returning -1 (safe skip)")
             count = -1
         }
-        print("[Hush] WindowChecker: pid \(pid) → \(count) window(s)")
+        hushLog("WindowChecker: pid \(pid) → \(count) window(s)")
         return count
     }
 

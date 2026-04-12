@@ -84,6 +84,15 @@ Hush lives in your menu bar and watches for regular apps that no longer have any
 
 The App Store requires sandboxing, which blocks the Accessibility API Hush depends on to count windows. Direct download only.
 
+## Reporting issues
+
+Hush writes a daily log file to `~/Library/Logs/Hush/` (one file per day, auto-cleaned after 7 days). If you hit a bug, please include the relevant log file when opening an issue.
+
+To grab the logs:
+
+1. In Finder, press `Cmd+Shift+G` and paste `~/Library/Logs/Hush/`.
+2. Attach the most recent `hush-YYYY-MM-DD.log` file to the [GitHub issue](https://github.com/jspw/Hush/issues).
+
 ## Releasing
 
 Build the release artifact:

@@ -6,7 +6,7 @@ class AppQuitter {
         let name = app.localizedName ?? "Unknown"
         let bundleID = app.bundleIdentifier ?? ""
 
-        print("[Hush] ✂ Quitting \"\(name)\" (\(bundleID), pid \(app.processIdentifier))")
+        hushLog("✂ Quitting \"\(name)\" (\(bundleID), pid \(app.processIdentifier))")
         app.terminate()
 
         let record = QuitRecord(appName: name, bundleIdentifier: bundleID, bundleURL: app.bundleURL)
