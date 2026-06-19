@@ -55,7 +55,7 @@ struct PopoverView: View {
     }
 
     private var headerIcon: some View {
-        Image("HushIcon")
+        Image(nsImage: HushAssets.appLogo ?? NSImage())
             .resizable()
             .interpolation(.high)
             .frame(width: 18, height: 18)

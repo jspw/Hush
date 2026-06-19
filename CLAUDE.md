@@ -8,16 +8,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build & Run
 
+There are **two build paths** that produce the same app from the same `Hush/` sources.
+
+### Script build (no Xcode required — uses only Command Line Tools)
+
+This is the release path, modeled on the sibling ScrollSense app. It builds via SwiftPM ([Package.swift](Package.swift)) and assembles a signed `.app`.
+
 ```bash
-# Open in Xcode
+./setup-signing.sh   # once: creates a stable "Hush Self-Signed" cert
+./build-app.sh       # swift build + assemble build/Hush.app (+ icon, Info.plist, codesign)
+./install.sh         # copy to /Applications and launch
+```
+
+Why the stable cert: ad-hoc signatures change every rebuild, so macOS forgets the Accessibility grant on each update. Signing with the fixed `Hush Self-Signed` identity keeps the designated requirement stable — **grant Accessibility once and it persists across updates**. ([build-app.sh](build-app.sh) falls back to ad-hoc with a warning if the cert is missing.)
+
+### Xcode build (requires full Xcode)
+
+```bash
 open Hush.xcodeproj
-
-# Build from command line
 xcodebuild -project Hush.xcodeproj -scheme Hush -configuration Debug -destination 'platform=macOS' build
-
-# Run built app
 open ~/Library/Developer/Xcode/DerivedData/Hush-*/Build/Products/Debug/Hush.app
 ```
+
+### Icons & images
+
+- **App icon:** [make-icon.sh](make-icon.sh) downscales `Hush/Assets.xcassets/AppIcon.appiconset/icon_1024.png` into `Resources/AppIcon.icns` (referenced via `CFBundleIconFile` in the script build). The Xcode build uses the asset catalog directly via `CFBundleIconName` in [Hush/Info.plist](Hush/Info.plist).
+- **In-app images** (menu bar glyph, popover logo): embedded as base64 PNG bytes in [Hush/EmbeddedAssets.swift](Hush/EmbeddedAssets.swift) and decoded with `NSImage(data:)`. This avoids depending on the asset catalog (which needs `actool`/Xcode), so both build paths load them identically. The `MenuBarIcon`/`HushIcon` imagesets in the catalog are now unused.
 
 **Testing:** No automated test suite. Manual testing uses the checklist in [docs/testing-guide.md](docs/testing-guide.md). Requires Accessibility permission granted in System Settings → Privacy & Security → Accessibility.
 

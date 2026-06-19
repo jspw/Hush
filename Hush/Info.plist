@@ -6,6 +6,8 @@
     <string>com.hush.app</string>
     <key>CFBundleName</key>
     <string>Hush</string>
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
     <key>CFBundleVersion</key>
     <string>$(CURRENT_PROJECT_VERSION)</string>
     <key>CFBundleShortVersionString</key>

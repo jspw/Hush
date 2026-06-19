@@ -35,6 +35,7 @@ build/
 .Trashes
 
 # Packages
+.build/
 .swiftpm/
 .claude/
 archived/
