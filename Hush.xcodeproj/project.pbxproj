@@ -22,6 +22,7 @@
 		B013 /* ViewHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = F013 /* ViewHelpers.swift */; };
 		B014 /* LaunchAtLoginToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014 /* LaunchAtLoginToggle.swift */; };
 		B016 /* HushLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* HushLogger.swift */; };
+		B017 /* EmbeddedAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F017 /* EmbeddedAssets.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		F013 /* ViewHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHelpers.swift; sourceTree = "<group>"; };
 		F014 /* LaunchAtLoginToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginToggle.swift; sourceTree = "<group>"; };
 		F016 /* HushLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushLogger.swift; sourceTree = "<group>"; };
+		F017 /* EmbeddedAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedAssets.swift; sourceTree = "<group>"; };
 		FAPP /* Hush.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hush.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FENT /* Hush.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Hush.entitlements; sourceTree = "<group>"; };
 		FPLIST /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -54,6 +56,7 @@
 				FPLIST /* Info.plist */,
 				FENT /* Hush.entitlements */,
 				F015 /* Assets.xcassets */,
+				F017 /* EmbeddedAssets.swift */,
 				GMODELS /* Models */,
 				GCORE /* Core */,
 				GUI /* UI */,
@@ -192,6 +195,7 @@
 				B013 /* ViewHelpers.swift in Sources */,
 				B014 /* LaunchAtLoginToggle.swift in Sources */,
 				B016 /* HushLogger.swift in Sources */,
+				B017 /* EmbeddedAssets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
