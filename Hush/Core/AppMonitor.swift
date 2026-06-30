@@ -14,14 +14,36 @@ class AppMonitor: ObservableObject {
     private var observers: [Any] = []
     private let checkQueue = DispatchQueue(label: "hush.check", qos: .utility)
     private var pollTimer: Timer?
-    private var lastFrontmostPID: pid_t = -1
-    private var lastFrontmostWindowCount: Int = -1
 
     // Tracks apps known to have fullscreen windows. Populated when apps are
     // frontmost (via the poll timer) and checked on deactivation. Fixes GitHub #1:
     // CMD+TAB from a fullscreen app causes AX to report 0 windows (because the
     // window is on another Space), which would otherwise trigger a false quit.
     private var fullscreenApps: Set<pid_t> = []
+
+    // Apps we've observed displaying ≥1 window *since the last Space change*. We
+    // only ever quit an app in this set, so quitting requires having actually
+    // seen a window on the current Space go away (a real close), not just an app
+    // reporting 0 windows. This filters out:
+    //   • still-launching apps (Postman/Numbers), background helpers, and
+    //     incoming-call panels AX can't see — never had a window, never quit;
+    //   • windows merely parked on another desktop — never counted on *this*
+    //     Space, so they never look like a close (the set is cleared on every
+    //     active-Space change and rebuilt from the new Space).
+    // Populated whenever a window count > 0 is observed for a PID — on activate,
+    // on poll, and via the post-Space-change rebuild.
+    private var appsWithKnownWindows: Set<pid_t> = []
+
+    // Timestamp of the last Space switch. Switching Spaces deactivates the
+    // previously-frontmost app and makes AX report 0 windows for windows that
+    // merely moved to another Space, which would trigger a false quit. We
+    // suppress quits for a short grace period after any Space change.
+    private var lastSpaceChangeAt: Date = .distantPast
+    private let spaceChangeGracePeriod: TimeInterval = 2.0
+
+    // Apps launched within this window legitimately have 0 windows while they
+    // start up (and during update/relaunch flows). Don't quit them yet.
+    private let launchGracePeriod: TimeInterval = 3.0
 
     init(windowChecker: WindowCheckerProtocol,
          whitelistManager: WhitelistManager,
@@ -51,6 +73,18 @@ class AppMonitor: ObservableObject {
             self?.handleAppEvent(note)
         }
 
+        // When an app comes to the front, immediately sample its window count on
+        // the current Space. This is how an app earns quit-eligibility: we record
+        // that we've seen one of its windows here. Doing it on activation (not
+        // just the 2s poll) catches windows that open and close quickly, which
+        // the poll would otherwise miss entirely. Never quits — only records.
+        let activate = nc.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil, queue: .main
+        ) { [weak self] note in
+            self?.recordWindowsOnActivate(note)
+        }
+
         let terminate = nc.addObserver(
             forName: NSWorkspace.didTerminateApplicationNotification,
             object: nil, queue: .main
@@ -65,9 +99,103 @@ class AppMonitor: ObservableObject {
             self?.pendingChecks[app.processIdentifier]?.cancel()
             self?.pendingChecks.removeValue(forKey: app.processIdentifier)
             self?.fullscreenApps.remove(app.processIdentifier)
+            self?.appsWithKnownWindows.remove(app.processIdentifier)
         }
 
-        observers = [deactivate, hide, terminate]
+        // A Space switch deactivates the previously-frontmost app and makes AX
+        // report 0 windows for windows that just moved to another Space. Record
+        // the time so checks within the grace period don't false-quit.
+        let spaceChange = nc.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.lastSpaceChangeAt = Date()
+            // Window counts are per-Space, so observations from the previous
+            // Space no longer apply. Clear them, then immediately rebuild from
+            // the *new* Space (see rebuild method) so every app that still has a
+            // window here stays quit-eligible — not just the frontmost one.
+            self.appsWithKnownWindows.removeAll()
+            hushLog("Event: active Space changed — cleared window history, suppressing quits for \(self.spaceChangeGracePeriod)s")
+            self.rebuildKnownWindowsForCurrentSpace()
+        }
+
+        observers = [deactivate, hide, activate, terminate, spaceChange]
+    }
+
+    /// Records that an app has a window on the current Space the moment it's
+    /// activated, so it becomes quit-eligible even if its window is short-lived.
+    /// Never triggers a quit.
+    private func recordWindowsOnActivate(_ note: Notification) {
+        guard isEnabled,
+              let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+              app.activationPolicy == .regular,
+              let bid = app.bundleIdentifier,
+              bid != Bundle.main.bundleIdentifier,
+              !whitelistManager.isWhitelisted(bundleID: bid)
+        else { return }
+
+        let pid = app.processIdentifier
+        if windowChecker.hasFullscreenWindow(for: pid) {
+            fullscreenApps.insert(pid)
+        }
+        if windowChecker.windowCount(for: pid) > 0 {
+            appsWithKnownWindows.insert(pid)
+        }
+    }
+
+    /// After a Space change the window history is stale (AX counts are
+    /// per-Space). Rebuild it by sampling *every* regular app's window count on
+    /// the new current Space, so an app that still has a window here stays
+    /// quit-eligible even if it isn't frontmost. Apps whose windows are on
+    /// another desktop report 0 and are left out, preserving cross-desktop
+    /// protection. Runs slightly delayed (to let the window server settle, and
+    /// inside the quit grace window) on the background queue since it touches
+    /// many AX elements.
+    private func rebuildKnownWindowsForCurrentSpace() {
+        checkQueue.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+            guard let self else { return }
+            var rebuilt: Set<pid_t> = []
+            for app in NSWorkspace.shared.runningApplications where app.activationPolicy == .regular {
+                guard let bid = app.bundleIdentifier,
+                      bid != Bundle.main.bundleIdentifier,
+                      !self.whitelistManager.isWhitelisted(bundleID: bid),
+                      !app.isTerminated else { continue }
+                if self.windowChecker.windowCount(for: app.processIdentifier) > 0 {
+                    rebuilt.insert(app.processIdentifier)
+                }
+            }
+            DispatchQueue.main.async {
+                self.appsWithKnownWindows.formUnion(rebuilt)
+                hushLog("Rebuilt window history for current Space: \(rebuilt.count) app(s) with a window here")
+            }
+        }
+    }
+
+    private func isWithinSpaceChangeGrace() -> Bool {
+        Date().timeIntervalSince(lastSpaceChangeAt) < spaceChangeGracePeriod
+    }
+
+    /// Shared gate for the 0-window case: returns true only when it's safe to
+    /// quit. Logs the reason when it isn't. Used by both the event-driven check
+    /// and the frontmost poll so they stay in sync.
+    private func isSafeToQuitWindowlessApp(_ app: NSRunningApplication, name: String) -> Bool {
+        if isWithinSpaceChangeGrace() {
+            hushLog("  ✗ Skipped: Space changed recently — \"\(name)\" window may be on another Space")
+            return false
+        }
+        if let launchDate = app.launchDate {
+            let elapsed = Date().timeIntervalSince(launchDate)
+            if elapsed < launchGracePeriod {
+                hushLog("  ✗ Skipped: \"\(name)\" launched \(String(format: "%.1f", elapsed))s ago — still starting up")
+                return false
+            }
+        }
+        if !appsWithKnownWindows.contains(app.processIdentifier) {
+            hushLog("  ✗ Skipped: never observed a window for \"\(name)\" — not quitting")
+            return false
+        }
+        return true
     }
 
     private func handleAppEvent(_ note: Notification) {
@@ -84,25 +212,17 @@ class AppMonitor: ObservableObject {
             return
         }
 
-        // Reset poll cache so the new frontmost app gets checked
-        lastFrontmostPID = -1
-        lastFrontmostWindowCount = -1
         scheduleCheck(for: app)
     }
 
     private func scheduleCheck(for app: NSRunningApplication) {
         let pid = app.processIdentifier
-        let name = app.localizedName ?? "?"
-        if pendingChecks[pid] != nil {
-            hushLog("Cancelling previous pending check for \"\(name)\"")
-        }
         pendingChecks[pid]?.cancel()
 
         let work = DispatchWorkItem { [weak self] in
             self?.performCheck(app: app)
         }
         pendingChecks[pid] = work
-        hushLog("Scheduled check for \"\(name)\" in 0.8s")
         checkQueue.asyncAfter(deadline: .now() + 0.8, execute: work)
     }
 
@@ -139,9 +259,12 @@ class AppMonitor: ObservableObject {
 
         let count = windowChecker.windowCount(for: app.processIdentifier)
         guard count == 0 else {
+            if count > 0 { appsWithKnownWindows.insert(app.processIdentifier) }
             hushLog("  ✗ Skipped: has \(count) window(s)")
             return
         }
+
+        guard isSafeToQuitWindowlessApp(app, name: name) else { return }
 
         hushLog("  ✓ All gates passed — quitting \"\(name)\"")
 
@@ -178,11 +301,6 @@ class AppMonitor: ObservableObject {
         guard let app = NSWorkspace.shared.frontmostApplication else { return }
         let pid = app.processIdentifier
 
-        // Fast exit: skip all work if frontmost app hasn't changed and had windows last time
-        if pid == lastFrontmostPID && lastFrontmostWindowCount > 0 {
-            return
-        }
-
         guard !app.isTerminated else { return }
         guard app.activationPolicy == .regular else { return }
         guard let bundleID = app.bundleIdentifier else { return }
@@ -200,11 +318,11 @@ class AppMonitor: ObservableObject {
         }
 
         let count = windowChecker.windowCount(for: pid)
-        lastFrontmostPID = pid
-        lastFrontmostWindowCount = count
+        if count > 0 { appsWithKnownWindows.insert(pid) }
 
         if count == 0 {
             let name = app.localizedName ?? "?"
+            guard isSafeToQuitWindowlessApp(app, name: name) else { return }
             hushLog("Poll: \"\(name)\" is frontmost with 0 windows — quitting")
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }

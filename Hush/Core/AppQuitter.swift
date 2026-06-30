@@ -19,12 +19,17 @@ class AppQuitter {
         let content = UNMutableNotificationContent()
         content.title = "Hush"
         content.body = "\(appName) was quit (no open windows)."
+        content.interruptionLevel = .active
 
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,
             trigger: nil
         )
-        UNUserNotificationCenter.current().add(request) { _ in }
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                hushLog("Notification failed for \"\(appName)\": \(error.localizedDescription)")
+            }
+        }
     }
 }
